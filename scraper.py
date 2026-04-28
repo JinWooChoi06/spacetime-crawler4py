@@ -48,6 +48,18 @@ def is_valid(url):
         ]
         if not any(parsed.netloc.endswith(domain) for domain in allowed_domains):
             return False
+        
+        if len(url) > 200:
+            return False
+        
+        #repeating path segments
+        segments = [s for s in parsed.path.split('/') if s]
+        if len(segments) != len(set(segments)):
+            return False
+
+        #deep paths
+        if len(segments) > 10:
+            return False
 
         return not re.match(
             r".*\.(css|js|bmp|gif|jpe?g|ico"
