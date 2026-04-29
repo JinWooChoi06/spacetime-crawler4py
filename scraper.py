@@ -3,6 +3,11 @@ from urllib.parse import urlparse
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 from urllib.parse import urldefrag
+
+unique_pages = set()
+longest_page = {'url': '', 'word_count': 0}
+subdomains = {}
+
 def scraper(url, resp):
     links = extract_next_links(url, resp)
     return [link for link in links if is_valid(link)]
@@ -17,10 +22,28 @@ def extract_next_links(url, resp):
     #         resp.raw_response.url: the url, again
     #         resp.raw_response.content: the content of the page!
     # Return a list with the hyperlinks (as strings) scrapped from resp.raw_response.content
+    global longest_page
     extractedLinks = []
     if resp.status != 200 or not resp.raw_response or not resp.raw_response.content: #check for status: 200, and that content exists
         return extractedLinks
     bSoup = BeautifulSoup(resp.raw_response.content, 'html.parser')
+    text = bSoup.get_text()
+    words = tokenize(text)
+    word_count = len(words)
+
+    #Q1
+    unique_pages.add(url)
+
+    #Q2
+    if word_count > longest_page['word_count']:
+        longest_page = {'url': url, 'word_count': word_count}
+
+    #Q4
+    subdomain = urlparse(url).hostname
+    if subdomain not in subdomains:
+        subdomains[subdomain] = set()
+    subdomains[subdomain].add(url)
+    
     for aTag in bSoup.find_all('a'): #look through all the <a></a> tags in html
         link = aTag.get('href') #get the link associated from the href in the <a></a> tag
         if link:
