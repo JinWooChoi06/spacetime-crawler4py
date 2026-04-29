@@ -3,13 +3,11 @@ from urllib.parse import urlparse
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 from urllib.parse import urldefrag
+from collections import Counter
 
 unique_pages = set()
 longest_page = {'url': '', 'word_count': 0}
 subdomains = {}
-
-from collections import Counter
-
 STOP_WORDS = {
     "a", "about", "above", "after", "again", "against", "all", "am", "an", "and", 
     "any", "are", "aren't", "as", "at", "be", "because", "been", "before", 
@@ -34,28 +32,41 @@ STOP_WORDS = {
     "yours", "yourself", "yourselves"
 }
 COUNTS = Counter()
+
 def scraper(url, resp):
     links = extract_next_links(url, resp)
     validLinks = [link for link in links if is_valid(link)]
     extract_information(url, resp)
     return validLinks
+
 def extract_information(url,resp)->None:
     if resp.status != 200 or not resp.raw_response or not resp.raw_response.content: #check for status: 200, and that content exists
         return
+    #Q1 Track unique Pages
+    unique_pages.add(url)
+
     bSoup = BeautifulSoup(resp.raw_response.content, 'html.parser')
     text = bSoup.get_text(separator=" ", strip=True)
     words = text.split()
-   
     currCount = count_words(words)
-    #update longest_page
+
+    #Q2 Update longest_page
     if currCount > longest_page['word_count']:
         longest_page['url'] = url
         longest_page['word_count'] = currCount
 
+    #Q4 Track unique subdomains
+    subdomain = urlparse(url).hostname
+    if subdomain not in subdomains:
+        subdomains[subdomain] = set()
+    subdomains[subdomain].add(url)
+
 def count_words(text)->int:
     valid_words = [word for word in text if word.lower() not in STOP_WORDS] #make a list of all words except stop words
+    #Q3 kinda only updates the word freq Counter, TODO need to call STOP_WORDS.most_common(50) at some point somewhere
     COUNTS.update(valid_words)  #update word Counter object with current url's text
     return len(valid_words)
+
 def extract_next_links(url, resp):
     # Implementation required.
     # url: the URL that was used to get the page
@@ -71,23 +82,6 @@ def extract_next_links(url, resp):
     if resp.status != 200 or not resp.raw_response or not resp.raw_response.content: #check for status: 200, and that content exists
         return extractedLinks
     bSoup = BeautifulSoup(resp.raw_response.content, 'html.parser')
-    text = bSoup.get_text()
-    words = tokenize(text)
-    word_count = len(words)
-
-    #Q1
-    unique_pages.add(url)
-
-    #Q2
-    if word_count > longest_page['word_count']:
-        longest_page = {'url': url, 'word_count': word_count}
-
-    #Q4
-    subdomain = urlparse(url).hostname
-    if subdomain not in subdomains:
-        subdomains[subdomain] = set()
-    subdomains[subdomain].add(url)
-    
     for aTag in bSoup.find_all('a'): #look through all the <a></a> tags in html
         link = aTag.get('href') #get the link associated from the href in the <a></a> tag
         if link:
