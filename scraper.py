@@ -10,29 +10,42 @@ unique_pages = set()
 longest_page = {'url': '', 'word_count': 0}
 subdomains = {}
 STOP_WORDS = {
-    "a", "about", "above", "after", "again", "against", "all", "am", "an", "and", 
-    "any", "are", "aren't", "as", "at", "be", "because", "been", "before", 
-    "being", "below", "between", "both", "but", "by", "can't", "cannot", 
-    "could", "couldn't", "did", "didn't", "do", "does", "doesn't", "doing", 
-    "don't", "down", "during", "each", "few", "for", "from", "further", "had", 
-    "hadn't", "has", "hasn't", "have", "haven't", "having", "he", "he'd", 
-    "he'll", "he's", "her", "here", "here's", "hers", "herself", "him", 
-    "himself", "his", "how", "how's", "i", "i'd", "i'll", "i'm", "i've", "if", 
-    "in", "into", "is", "isn't", "it", "it's", "its", "itself", "let's", "me", 
-    "more", "most", "mustn't", "my", "myself", "no", "nor", "not", "of", "off", 
-    "on", "once", "only", "or", "other", "ought", "our", "ours", "ourselves", 
-    "out", "over", "own", "same", "shan't", "she", "she'd", "she'll", "she's", 
-    "should", "shouldn't", "so", "some", "such", "than", "that", "that's", 
-    "the", "their", "theirs", "them", "themselves", "then", "there", "there's", 
-    "these", "they", "they'd", "they'll", "they're", "they've", "this", 
-    "those", "through", "to", "too", "under", "until", "up", "very", "was", 
-    "wasn't", "we", "we'd", "we'll", "we're", "we've", "were", "weren't", 
-    "what", "what's", "when", "when's", "where", "where's", "which", "while", 
-    "who", "who's", "whom", "why", "why's", "with", "won't", "would", 
-    "wouldn't", "you", "you'd", "you'll", "you're", "you've", "your", 
+    "a", "about", "above", "after", "again", "against", "all", "am", "an", "and",
+    "any", "are", "aren't", "as", "at", "be", "because", "been", "before",
+    "being", "below", "between", "both", "but", "by", "can't", "cannot",
+    "could", "couldn't", "did", "didn't", "do", "does", "doesn't", "doing",
+    "don't", "down", "during", "each", "few", "for", "from", "further", "had",
+    "hadn't", "has", "hasn't", "have", "haven't", "having", "he", "he'd",
+    "he'll", "he's", "her", "here", "here's", "hers", "herself", "him",
+    "himself", "his", "how", "how's", "i", "i'd", "i'll", "i'm", "i've", "if",
+    "in", "into", "is", "isn't", "it", "it's", "its", "itself", "let's", "me",
+    "more", "most", "mustn't", "my", "myself", "no", "nor", "not", "of", "off",
+    "on", "once", "only", "or", "other", "ought", "our", "ours", "ourselves",
+    "out", "over", "own", "same", "shan't", "she", "she'd", "she'll", "she's",
+    "should", "shouldn't", "so", "some", "such", "than", "that", "that's",
+    "the", "their", "theirs", "them", "themselves", "then", "there", "there's",
+    "these", "they", "they'd", "they'll", "they're", "they've", "this",
+    "those", "through", "to", "too", "under", "until", "up", "very", "was",
+    "wasn't", "we", "we'd", "we'll", "we're", "we've", "were", "weren't",
+    "what", "what's", "when", "when's", "where", "where's", "which", "while",
+    "who", "who's", "whom", "why", "why's", "with", "won't", "would",
+    "wouldn't", "you", "you'd", "you'll", "you're", "you've", "your",
     "yours", "yourself", "yourselves"
 }
 COUNTS = Counter()
+
+# Blacklisted URL patterns that are traps
+BLACKLIST_PATTERNS = [
+    r"wiki\.ics\.uci\.edu/doku\.php",  # wiki trap Edwin found
+    r"do=media",                         # media pages in wiki
+    r"tab_details=history",              # history pages in wiki
+    r"action=login",                     # login pages
+    r"action=register",                  # register pages
+    r"calendar",                         # calendar traps
+    r"date=",                            # date-based traps
+    r"session=",                         # session traps
+    r"sid=",                             # session id traps
+]
 
 def scraper(url, resp):
     links = extract_next_links(url, resp)
@@ -53,7 +66,7 @@ def extract_information(url,resp)->None:
 
     bSoup = BeautifulSoup(resp.raw_response.content, 'html.parser')
     text = bSoup.get_text(separator=" ", strip=True)
-    words = text.split()
+    words = re.findall(r'[a-zA-Z0-9]+', text)  # fixed: alphanumeric only, avoids punctuation attached to words
     currCount = count_words(words)
 
     #Q2 Update longest_page
@@ -62,15 +75,16 @@ def extract_information(url,resp)->None:
         longest_page['word_count'] = currCount
 
     #Q4 Track unique subdomains
-    subdomain = urlparse(url).hostname
-    if subdomain not in subdomains:
-        subdomains[subdomain] = set()
-    subdomains[subdomain].add(url)
+    hostname = urlparse(url).hostname
+    if hostname:  # fixed: check hostname is not None before using it
+        if hostname not in subdomains:
+            subdomains[hostname] = set()
+        subdomains[hostname].add(url)
 
 def count_words(text)->int:
     valid_words = [word for word in text if word.lower() not in STOP_WORDS] #make a list of all words except stop words
     #Q3 kinda only updates the word freq Counter, TODO need to call COUNTS.most_common(50) at some point somewhere
-    COUNTS.update(valid_words)  #update word Counter object with current url's text
+    COUNTS.update([w.lower() for w in valid_words])  # fixed: lowercase so "The" and "the" are not counted separately
     return len(valid_words)
 
 def extract_next_links(url, resp):
@@ -97,7 +111,7 @@ def extract_next_links(url, resp):
     return extractedLinks
 
 def is_valid(url):
-    # Decide whether to crawl this url or not. 
+    # Decide whether to crawl this url or not.
     # If you decide to crawl it, return True; otherwise return False.
     # There are already some conditions that return False.
     try:
@@ -115,10 +129,15 @@ def is_valid(url):
         ]
         if not any(parsed.netloc.endswith(domain) for domain in allowed_domains):
             return False
-        
+
+        # check blacklist patterns to avoid traps
+        for pattern in BLACKLIST_PATTERNS:
+            if re.search(pattern, url):
+                return False
+
         if len(url) > 200:
             return False
-        
+
         #repeating path segments
         segments = [s for s in parsed.path.split('/') if s]
         if len(segments) != len(set(segments)):
