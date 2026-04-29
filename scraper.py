@@ -150,4 +150,4 @@ def save_as_json(path="results.json"):
         "word_counts": COUNTS.most_common(50),
     }
     with open(path, "w") as f:
-        json.dump(state, f, indent=2)
+        json.dump(results, f, indent=2)
