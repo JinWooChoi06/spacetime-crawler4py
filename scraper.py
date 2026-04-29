@@ -1,4 +1,5 @@
 import re
+import json
 from urllib.parse import urlparse
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
@@ -37,6 +38,11 @@ def scraper(url, resp):
     links = extract_next_links(url, resp)
     validLinks = [link for link in links if is_valid(link)]
     extract_information(url, resp)
+
+    # TODO: find a better place to call this
+    # Save as JSON
+    save_as_json()
+
     return validLinks
 
 def extract_information(url,resp)->None:
@@ -63,7 +69,7 @@ def extract_information(url,resp)->None:
 
 def count_words(text)->int:
     valid_words = [word for word in text if word.lower() not in STOP_WORDS] #make a list of all words except stop words
-    #Q3 kinda only updates the word freq Counter, TODO need to call STOP_WORDS.most_common(50) at some point somewhere
+    #Q3 kinda only updates the word freq Counter, TODO need to call COUNTS.most_common(50) at some point somewhere
     COUNTS.update(valid_words)  #update word Counter object with current url's text
     return len(valid_words)
 
@@ -135,3 +141,13 @@ def is_valid(url):
     except TypeError:
         print ("TypeError for ", parsed)
         raise
+
+def save_as_json(path="results.json"):
+    results = {
+        "unique_pages": list(unique_pages),
+        "longest_page": longest_page,
+        "subdomains": {key: list(val) for key, val in subdomains.items()},
+        "word_counts": COUNTS.most_common(50),
+    }
+    with open(path, "w") as f:
+        json.dump(state, f, indent=2)
