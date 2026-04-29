@@ -8,10 +8,54 @@ unique_pages = set()
 longest_page = {'url': '', 'word_count': 0}
 subdomains = {}
 
+from collections import Counter
+
+STOP_WORDS = {
+    "a", "about", "above", "after", "again", "against", "all", "am", "an", "and", 
+    "any", "are", "aren't", "as", "at", "be", "because", "been", "before", 
+    "being", "below", "between", "both", "but", "by", "can't", "cannot", 
+    "could", "couldn't", "did", "didn't", "do", "does", "doesn't", "doing", 
+    "don't", "down", "during", "each", "few", "for", "from", "further", "had", 
+    "hadn't", "has", "hasn't", "have", "haven't", "having", "he", "he'd", 
+    "he'll", "he's", "her", "here", "here's", "hers", "herself", "him", 
+    "himself", "his", "how", "how's", "i", "i'd", "i'll", "i'm", "i've", "if", 
+    "in", "into", "is", "isn't", "it", "it's", "its", "itself", "let's", "me", 
+    "more", "most", "mustn't", "my", "myself", "no", "nor", "not", "of", "off", 
+    "on", "once", "only", "or", "other", "ought", "our", "ours", "ourselves", 
+    "out", "over", "own", "same", "shan't", "she", "she'd", "she'll", "she's", 
+    "should", "shouldn't", "so", "some", "such", "than", "that", "that's", 
+    "the", "their", "theirs", "them", "themselves", "then", "there", "there's", 
+    "these", "they", "they'd", "they'll", "they're", "they've", "this", 
+    "those", "through", "to", "too", "under", "until", "up", "very", "was", 
+    "wasn't", "we", "we'd", "we'll", "we're", "we've", "were", "weren't", 
+    "what", "what's", "when", "when's", "where", "where's", "which", "while", 
+    "who", "who's", "whom", "why", "why's", "with", "won't", "would", 
+    "wouldn't", "you", "you'd", "you'll", "you're", "you've", "your", 
+    "yours", "yourself", "yourselves"
+}
+COUNTS = Counter()
 def scraper(url, resp):
     links = extract_next_links(url, resp)
-    return [link for link in links if is_valid(link)]
+    validLinks = [link for link in links if is_valid(link)]
+    extract_information(url, resp)
+    return validLinks
+def extract_information(url,resp)->None:
+    if resp.status != 200 or not resp.raw_response or not resp.raw_response.content: #check for status: 200, and that content exists
+        return
+    bSoup = BeautifulSoup(resp.raw_response.content, 'html.parser')
+    text = bSoup.get_text(separator=" ", strip=True)
+    words = text.split()
+   
+    currCount = count_words(words)
+    #update longest_page
+    if currCount > longest_page['word_count']:
+        longest_page['url'] = url
+        longest_page['word_count'] = currCount
 
+def count_words(text)->int:
+    valid_words = [word for word in text if word.lower() not in STOP_WORDS] #make a list of all words except stop words
+    COUNTS.update(valid_words)  #update word Counter object with current url's text
+    return len(valid_words)
 def extract_next_links(url, resp):
     # Implementation required.
     # url: the URL that was used to get the page
