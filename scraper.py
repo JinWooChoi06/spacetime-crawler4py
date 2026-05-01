@@ -152,6 +152,11 @@ def is_valid(url):
             if re.search(pattern, url):
                 return False
 
+        # avoid urls with too many query parameters
+        query_params = parsed.query.count('&')
+        if query_params > 3:
+            return False
+
         if len(url) > 200:
             return False
 
