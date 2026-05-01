@@ -36,6 +36,7 @@ COUNTS = Counter()
 
 # Blacklisted URL patterns that are traps
 BLACKLIST_PATTERNS = [
+    r"wics\.ics\.uci\.edu/events/.*",    # wics events trap
     r"archive\.ics\.uci\.edu/dataset.*", # archive trap
     r"wiki\.ics\.uci\.edu/doku\.php",    # wiki trap Edwin found
     r"do=media",                         # media pages in wiki
