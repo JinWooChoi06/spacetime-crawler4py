@@ -47,11 +47,11 @@ BLACKLIST_PATTERNS = [
     r"date=",                            # date-based traps
     r"session=",                         # session traps
     r"sid=",                             # session id traps
-    r"/events/category",                 # event category pages
-    r"/events/day",                      # event day pages
-    r"share=",                           # social share links
-    r"replytocom=",                      # comment reply traps
-    r"print=",                           # print version traps
+    # r"/events/category",               # not yet confirmed from crawling
+    # r"/events/day",                    # not yet confirmed from crawling
+    # r"share=",                         # not yet confirmed from crawling
+    # r"replytocom=",                    # not yet confirmed from crawling
+    # r"print=",                         # not yet confirmed from crawling
 ]
 
 def scraper(url, resp):
