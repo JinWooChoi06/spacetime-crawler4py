@@ -37,16 +37,24 @@ COUNTS = Counter()
 # Blacklisted URL patterns that are traps
 BLACKLIST_PATTERNS = [
     r"wics\.ics\.uci\.edu/events/.*",    # wics events trap
+    r"wics\.ics\.uci\.edu/event/",       # wics event trap
     r"archive\.ics\.uci\.edu/dataset.*", # archive trap
     r"wiki\.ics\.uci\.edu/doku\.php",    # wiki trap Edwin found
+    r"share=",                           # blocks ?share=facebook, ?share=twitter etc.
+    r"ical=",                            # blocks calendar export URLs
+    r"outlook-ical"                      # blocks outlook calendar URLs
+    r"archive-beta\.ics\.uci\.edu/dataset.*",  # archive-beta dataset trap
+    r"order=",                           # sorting parameter trap
     r"do=media",                         # media pages in wiki
     r"tab_details=history",              # history pages in wiki
     r"action=login",                     # login pages
     r"action=register",                  # register pages
+    r"/auth/",                           # authentication pages
     r"calendar",                         # calendar traps
     r"date=",                            # date-based traps
     r"session=",                         # session traps
     r"sid=",                             # session id traps
+    r"/day/",                            # catches all day-based calendar URLs
 ]
 
 def scraper(url, resp):
@@ -56,20 +64,27 @@ def scraper(url, resp):
 
     # TODO: find a better place to call this
     # Save as JSON
-    save_as_json()
+    if len(unique_pages) > 0 and len(unique_pages) % 100 == 0:
+        save_as_json()
 
     return validLinks
 
 def extract_information(url,resp)->None:
     if resp.status != 200 or not resp.raw_response or not resp.raw_response.content: #check for status: 200, and that content exists
         return
-    #Q1 Track unique Pages
-    unique_pages.add(url)
 
     bSoup = BeautifulSoup(resp.raw_response.content, 'html.parser')
     text = bSoup.get_text(separator=" ", strip=True)
     words = re.findall(r'[a-zA-Z0-9]+', text)  # fixed: alphanumeric only, avoids punctuation attached to words
     currCount = count_words(words)
+
+
+    #Low information check
+    if currCount < 50:
+        return
+    
+    #Q1 Track unique Pages
+    unique_pages.add(url)
 
     #Q2 Update longest_page
     if currCount > longest_page['word_count']:
