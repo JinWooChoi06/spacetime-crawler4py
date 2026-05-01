@@ -37,21 +37,21 @@ COUNTS = Counter()
 # Blacklisted URL patterns that are traps
 BLACKLIST_PATTERNS = [
     r"wiki\.ics\.uci\.edu/doku\.php",   # wiki trap Edwin found
-    r"do=media",                          # media pages in wiki
-    r"tab_details=history",               # history pages in wiki
-    r"action=login",                      # login pages
-    r"action=register",                   # register pages
-    r"calendar",                          # calendar traps
-    r"date=",                             # date-based traps
-    r"session=",                          # session traps
-    r"sid=",                              # session id traps
-    r"archive\.ics\.uci\.edu/dataset",    # archive dataset trap Edwin found
-    r"wics\.ics\.uci\.edu/events",        # wics calendar trap
-    r"/events/category",                  # event category pages
-    r"/events/day",                       # event day pages
-    r"share=",                            # social share links
-    r"replytocom=",                       # comment reply traps
-    r"print=",                            # print version traps
+    r"wics\.ics\.uci\.edu/events/.*",   # wics events trap Edwin found
+    r"archive\.ics\.uci\.edu/dataset",  # archive dataset trap Edwin found
+    r"do=media",                         # media pages in wiki
+    r"tab_details=history",              # history pages in wiki
+    r"action=login",                     # login pages
+    r"action=register",                  # register pages
+    r"calendar",                         # calendar traps
+    r"date=",                            # date-based traps
+    r"session=",                         # session traps
+    r"sid=",                             # session id traps
+    r"/events/category",                 # event category pages
+    r"/events/day",                      # event day pages
+    r"share=",                           # social share links
+    r"replytocom=",                      # comment reply traps
+    r"print=",                           # print version traps
 ]
 
 def scraper(url, resp):
