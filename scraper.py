@@ -55,6 +55,7 @@ BLACKLIST_PATTERNS = [
     r"session=",                         # session traps
     r"sid=",                             # session id traps
     r"/day/",                            # catches all day-based calendar URLs
+    r"cdb\.ics\.uci\.edu",               # chemical database
 ]
 
 def scraper(url, resp):
@@ -75,7 +76,7 @@ def extract_information(url,resp)->None:
 
     bSoup = BeautifulSoup(resp.raw_response.content, 'html.parser')
     text = bSoup.get_text(separator=" ", strip=True)
-    words = re.findall(r'[a-zA-Z0-9]+', text)  # fixed: alphanumeric only, avoids punctuation attached to words
+    words = re.findall(r'[a-zA-Z]+', text)  # fixed: alphanumeric only, avoids punctuation attached to words
     currCount = count_words(words)
 
 
@@ -99,7 +100,7 @@ def extract_information(url,resp)->None:
         subdomains[hostname].add(url)
 
 def count_words(text)->int:
-    valid_words = [word for word in text if word.lower() not in STOP_WORDS] #make a list of all words except stop words
+    valid_words = [word for word in text if word.lower() not in STOP_WORD and len(word) > 1] #make a list of all words except stop words
     #Q3 kinda only updates the word freq Counter, TODO need to call COUNTS.most_common(50) at some point somewhere
     COUNTS.update([w.lower() for w in valid_words])  # fixed: lowercase so "The" and "the" are not counted separately
     return len(valid_words)
