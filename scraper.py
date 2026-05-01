@@ -56,8 +56,12 @@ BLACKLIST_PATTERNS = [
     r"date=",                            # date-based traps
     r"session=",                         # session traps
     r"sid=",                             # session id traps
-    r"/day/",                            # catches all day-based calendar URLs
+    r"/day/\d{4}",                       # day based calendar urls
     r"cdb\.ics\.uci\.edu",               # chemical database
+    r"wp-login",                         # WordPress login pages
+    r"isg\.ics\.uci\.edu/events/tag/talk",  #talk archives on isg
+    r"isg\.ics\.uci\.edu/events/\d",     # date-based isg event URLs
+    r"/\d{4}-\d{2}",                     # YYYY-MM archive URLs
 ]
 
 def scraper(url, resp):
