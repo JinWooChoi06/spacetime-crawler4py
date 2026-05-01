@@ -100,7 +100,7 @@ def extract_information(url,resp)->None:
         subdomains[hostname].add(url)
 
 def count_words(text)->int:
-    valid_words = [word for word in text if word.lower() not in STOP_WORD and len(word) > 1] #make a list of all words except stop words
+    valid_words = [word for word in text if word.lower() not in STOP_WORDS and len(word) > 1] #make a list of all words except stop words
     #Q3 kinda only updates the word freq Counter, TODO need to call COUNTS.most_common(50) at some point somewhere
     COUNTS.update([w.lower() for w in valid_words])  # fixed: lowercase so "The" and "the" are not counted separately
     return len(valid_words)
