@@ -1,10 +1,12 @@
 import re
 import json
 from urllib.parse import urlparse
+from urllib.parse import unquote
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 from urllib.parse import urldefrag
 from collections import Counter
+
 
 unique_pages = set()
 longest_page = {'url': '', 'word_count': 0}
@@ -170,6 +172,7 @@ def is_valid(url):
         if len(segments) > 10:
             return False
 
+        decoded_path = unquote(parsed.path).lower()
         return not re.match(
             r".*\.(css|js|bmp|gif|jpe?g|ico"
             + r"|png|tiff?|mid|mp2|mp3|mp4"
@@ -178,7 +181,7 @@ def is_valid(url):
             + r"|data|dat|exe|bz2|tar|msi|bin|7z|psd|dmg|iso"
             + r"|epub|dll|cnf|tgz|sha1"
             + r"|thmx|mso|arff|rtf|jar|csv"
-            + r"|rm|smil|wmv|swf|wma|zip|rar|gz)$", parsed.path.lower())
+            + r"|rm|smil|wmv|swf|wma|zip|rar|gz|mpg)$", decoded_path)
 
     except TypeError:
         print ("TypeError for ", parsed)
