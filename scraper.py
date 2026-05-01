@@ -44,7 +44,7 @@ BLACKLIST_PATTERNS = [
     r"wiki\.ics\.uci\.edu/doku\.php",    # wiki trap Edwin found
     r"share=",                           # blocks ?share=facebook, ?share=twitter etc.
     r"ical=",                            # blocks calendar export URLs
-    r"outlook-ical"                      # blocks outlook calendar URLs
+    r"outlook-ical",                     # blocks outlook calendar URLs
     r"archive-beta\.ics\.uci\.edu/dataset.*",  # archive-beta dataset trap
     r"order=",                           # sorting parameter trap
     r"do=media",                         # media pages in wiki
@@ -71,7 +71,7 @@ def scraper(url, resp):
 
     # TODO: find a better place to call this
     # Save as JSON
-    if len(unique_pages) > 0 and len(unique_pages) % 100 == 0:
+    if len(unique_pages) > 0:
         save_as_json()
 
     return validLinks
