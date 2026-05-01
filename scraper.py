@@ -36,15 +36,22 @@ COUNTS = Counter()
 
 # Blacklisted URL patterns that are traps
 BLACKLIST_PATTERNS = [
-    r"wiki\.ics\.uci\.edu/doku\.php",  # wiki trap Edwin found
-    r"do=media",                         # media pages in wiki
-    r"tab_details=history",              # history pages in wiki
-    r"action=login",                     # login pages
-    r"action=register",                  # register pages
-    r"calendar",                         # calendar traps
-    r"date=",                            # date-based traps
-    r"session=",                         # session traps
-    r"sid=",                             # session id traps
+    r"wiki\.ics\.uci\.edu/doku\.php",   # wiki trap Edwin found
+    r"do=media",                          # media pages in wiki
+    r"tab_details=history",               # history pages in wiki
+    r"action=login",                      # login pages
+    r"action=register",                   # register pages
+    r"calendar",                          # calendar traps
+    r"date=",                             # date-based traps
+    r"session=",                          # session traps
+    r"sid=",                              # session id traps
+    r"archive\.ics\.uci\.edu/dataset",    # archive dataset trap Edwin found
+    r"wics\.ics\.uci\.edu/events",        # wics calendar trap
+    r"/events/category",                  # event category pages
+    r"/events/day",                       # event day pages
+    r"share=",                            # social share links
+    r"replytocom=",                       # comment reply traps
+    r"print=",                            # print version traps
 ]
 
 def scraper(url, resp):
@@ -68,6 +75,10 @@ def extract_information(url,resp)->None:
     text = bSoup.get_text(separator=" ", strip=True)
     words = re.findall(r'[a-zA-Z0-9]+', text)  # fixed: alphanumeric only, avoids punctuation attached to words
     currCount = count_words(words)
+
+    # skip low information pages (less than 50 words)
+    if currCount < 50:
+        return
 
     #Q2 Update longest_page
     if currCount > longest_page['word_count']:
@@ -134,6 +145,11 @@ def is_valid(url):
         for pattern in BLACKLIST_PATTERNS:
             if re.search(pattern, url):
                 return False
+
+        # avoid urls with too many query parameters
+        query_params = parsed.query.count('&')
+        if query_params > 3:
+            return False
 
         if len(url) > 200:
             return False
