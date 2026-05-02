@@ -52,7 +52,6 @@ BLACKLIST_PATTERNS = [
     r"action=login",                     # login pages
     r"action=register",                  # register pages
     r"/auth/",                           # authentication pages
-    #r"calendar",                         # calendar traps
     r"date=",                            # date-based traps
     r"session=",                         # session traps
     r"sid=",                             # session id traps
@@ -61,7 +60,8 @@ BLACKLIST_PATTERNS = [
     r"wp-login",                         # WordPress login pages
     r"isg\.ics\.uci\.edu/events/tag/talk",  #talk archives on isg
     r"isg\.ics\.uci\.edu/events/\d",     # date-based isg event URLs
-    r"/\d{4}-\d{2}",                     # YYYY-MM archive URLs
+    #r"/\d{4}-\d{2}",                     # YYYY-MM archive URLs
+    r"C=[DNMS];O=[AD]",                  # Apache directory sorting
 ]
 
 def scraper(url, resp):
@@ -110,7 +110,7 @@ def extract_information(url,resp)->None:
         subdomains[hostname].add(url)
 
 def count_words(text)->int:
-    valid_words = [word for word in text if word.lower() not in STOP_WORDS and len(word) > 1] #make a list of all words except stop words
+    valid_words = [word for word in text if word.lower() not in STOP_WORDS and len(word) > 2] #make a list of all words except stop words
     #Q3 kinda only updates the word freq Counter, TODO need to call COUNTS.most_common(50) at some point somewhere
     COUNTS.update([w.lower() for w in valid_words])  # fixed: lowercase so "The" and "the" are not counted separately
     return len(valid_words)
@@ -196,7 +196,7 @@ def is_valid(url):
             + r"|data|dat|exe|bz2|tar|msi|bin|7z|psd|dmg|iso"
             + r"|epub|dll|cnf|tgz|sha1"
             + r"|thmx|mso|arff|rtf|jar|csv"
-            + r"|rm|smil|wmv|swf|wma|zip|rar|gz|mpg|ppsx|apk|nb|ipynb)$", decoded_path)
+            + r"|rm|smil|wmv|swf|wma|zip|rar|gz|mpg|ppsx|apk|nb|ipynb|pps)$", decoded_path)
 
     except TypeError:
         print ("TypeError for ", parsed)
