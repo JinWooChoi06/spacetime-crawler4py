@@ -60,7 +60,7 @@ BLACKLIST_PATTERNS = [
     r"wp-login",                         # WordPress login pages
     r"isg\.ics\.uci\.edu/events/tag/talk",  #talk archives on isg
     r"isg\.ics\.uci\.edu/events/\d",     # date-based isg event URLs
-    #r"/\d{4}-\d{2}",                     # YYYY-MM archive URLs
+    r"/\d{4}-\d{2}",                     # YYYY-MM archive URLs
     r"C=[DNMS];O=[AD]",                  # Apache directory sorting
 ]
 
