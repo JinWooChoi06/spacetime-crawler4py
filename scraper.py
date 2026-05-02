@@ -52,7 +52,7 @@ BLACKLIST_PATTERNS = [
     r"action=login",                     # login pages
     r"action=register",                  # register pages
     r"/auth/",                           # authentication pages
-    r"calendar",                         # calendar traps
+    #r"calendar",                         # calendar traps
     r"date=",                            # date-based traps
     r"session=",                         # session traps
     r"sid=",                             # session id traps
@@ -78,6 +78,10 @@ def scraper(url, resp):
 
 def extract_information(url,resp)->None:
     if resp.status != 200 or not resp.raw_response or not resp.raw_response.content: #check for status: 200, and that content exists
+        return
+    
+    content_type = resp.raw_response.headers.get('content-type', '')
+    if 'pdf' in content_type.lower():
         return
 
     bSoup = BeautifulSoup(resp.raw_response.content, 'html.parser')
@@ -125,6 +129,13 @@ def extract_next_links(url, resp):
     extractedLinks = []
     if resp.status != 200 or not resp.raw_response or not resp.raw_response.content: #check for status: 200, and that content exists
         return extractedLinks
+    
+    #check for pdf content-type in header
+    content_type = resp.raw_response.headers.get('content-type', '')
+    if 'pdf' in content_type.lower():
+        return extractedLinks
+    
+
     bSoup = BeautifulSoup(resp.raw_response.content, 'html.parser')
     for aTag in bSoup.find_all('a'): #look through all the <a></a> tags in html
         link = aTag.get('href') #get the link associated from the href in the <a></a> tag
@@ -185,7 +196,7 @@ def is_valid(url):
             + r"|data|dat|exe|bz2|tar|msi|bin|7z|psd|dmg|iso"
             + r"|epub|dll|cnf|tgz|sha1"
             + r"|thmx|mso|arff|rtf|jar|csv"
-            + r"|rm|smil|wmv|swf|wma|zip|rar|gz|mpg|ppsx|apk|nb)$", decoded_path)
+            + r"|rm|smil|wmv|swf|wma|zip|rar|gz|mpg|ppsx|apk|nb|ipynb)$", decoded_path)
 
     except TypeError:
         print ("TypeError for ", parsed)
